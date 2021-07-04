@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-undef
-const mongoose = requere('mongoose');
+const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
   name: { // имя пользователя

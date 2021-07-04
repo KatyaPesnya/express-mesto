@@ -1,11 +1,12 @@
-// const router = require('express').Router();
+const router = require('express').Router();
+// eslint-disable-next-line no-unused-vars
+const User = require('../models/user');
+const { getUsers, getUserById, createUser } = require('../controllers/users');
 
-// router.get('/users', (req, res) => {
-//   res.send('users');
-// });
+router.get('/users', getUsers);
 
-// router.get('/users/:id', (req, res) => {
-//   res.send(`${req.params.id}`);
-// });
+router.get('/users/:userId', getUserById);
 
-// module.exports = router;
+router.post('/users', createUser);
+
+module.exports = router;
