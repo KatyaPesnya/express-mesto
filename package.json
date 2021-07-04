@@ -4,7 +4,6 @@
   "description": "## Директории",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint .",
     "dev": "nodemon app.js",
     "start": "node app.js"
@@ -22,7 +21,7 @@
   "homepage": "https://github.com/KatyaPesnya/express-mesto#readme",
   "dependencies": {
     "express": "^4.17.1",
-    "mongoose": "^5.13.1"
+    "mongoose": "^5.13.2"
   },
   "devDependencies": {
     "eslint": "^7.30.0",
