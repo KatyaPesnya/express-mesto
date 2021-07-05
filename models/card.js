@@ -15,6 +15,7 @@ const cardSchema = new mongoose.Schema({
   owner: { // ссылка на модель аватара карточки
     type: mongoose.Schema.Types.ObjectId,
     requered: true,
+    ref: 'user',
   },
   likes: { // список лайкнувших пост пользователей
     type: mongoose.Schema.Types.ObjectId,
