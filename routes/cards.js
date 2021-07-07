@@ -1,11 +1,17 @@
 const router = require('express').Router();
-// eslint-disable-next-line no-unused-vars
-const Card = require('../models/card');
-const { getCards, deleteCard, createCard } = require('../controllers/cards');
+
+const {
+  getCards, deleteCard, createCard, likeCard, dislikeCard,
+} = require('../controllers/cards');
 
 router.get('/cards', getCards);
 
 router.delete('/cards/:cardId', deleteCard);
 
 router.post('/cards', createCard);
+
+router.put('/cards/:cardId/likes', likeCard);
+
+router.delete('/cards/:cardId/likes', dislikeCard);
+
 module.exports = router;

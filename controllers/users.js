@@ -10,17 +10,19 @@ const getUsers = (req, res) => {
     });
 };
 const getUserById = (req, res) => {
-  const { userId } = req.body;
-
-  User.findById({ userId })
+  User.findById(req.user._id)
     .then((user) => {
       if (!user) {
-        res.status(404).send({ message: 'Пользователь по указанному _id не найден.' });
+        res
+          .status(404)
+          .send({ message: 'Пользователь по указанному _id не найден.' });
         return;
       }
       res.status(200).send(user);
     })
-    .catсh((err) => res.status(500).send(err));
+    .catch((err) => {
+      res.status(500).send({ message: `Внутренняя ошибка сервера: ${err}` });
+    });
 };
 
 const createUser = (req, res) => {
@@ -32,11 +34,39 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (res.status(400)) {
-        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя.' });
+        res
+          .status(400)
+          .send({
+            message: 'Переданы некорректные данные при создании пользователя.',
+          });
         return;
       }
       res.status(500).send(err);
     });
 };
 
-module.exports = { getUsers, getUserById, createUser };
+const updateProfile = (req, res) => {
+  const { name, about } = req.body;
+  return User.findByIdAndUpdate(req.user._id, { name, about })
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      res.status(500).send({ message: `Внутренняя ошибка сервера: ${err}` });
+    });
+};
+
+const updateAvatar = (req, res) => {
+  const { avatar } = req.body;
+  return User.findByIdAndUpdate(req.user._id, { avatar })
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      res.status(500).send({ message: `Внутренняя ошибка сервера: ${err}` });
+    });
+};
+
+module.exports = {
+  getUsers, getUserById, createUser, updateProfile, updateAvatar,
+};
