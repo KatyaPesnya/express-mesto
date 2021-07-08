@@ -1,7 +1,7 @@
 {
   "name": "express-mesto",
   "version": "1.0.0",
-  "description": "## Директории",
+  "description": "## Проект  Mesto на Express.js",
   "main": "app.js",
   "scripts": {
     "lint": "eslint .",

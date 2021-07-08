@@ -1,12 +1,16 @@
 const User = require('../models/user');
 
+const {
+  BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FAUND, OK,
+} = require('../utils/constants');
+
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => {
-      res.status(200).send(users);
+      res.status(OK).send(users);
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(INTERNAL_SERVER_ERROR).send(err);
     });
 };
 const getUserById = (req, res) => {
@@ -14,14 +18,14 @@ const getUserById = (req, res) => {
     .then((user) => {
       if (!user) {
         res
-          .status(404)
+          .status(NOT_FAUND)
           .send({ message: 'Пользователь по указанному _id не найден.' });
         return;
       }
-      res.status(200).send(user);
+      res.status(OK).send(user);
     })
     .catch((err) => {
-      res.status(500).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
@@ -30,18 +34,18 @@ const createUser = (req, res) => {
 
   User.create({ name, about, avatar })
     .then((user) => {
-      res.status(200).send(user);
+      res.status(OK).send(user);
     })
     .catch((err) => {
-      if (res.status(400)) {
+      if (res.status(BAD_REQUEST)) {
         res
-          .status(400)
+          .status(BAD_REQUEST)
           .send({
-            message: 'Переданы некорректные данные при создании пользователя.',
+            message: `Переданы некорректные данные при создании пользователя: ${err}`,
           });
         return;
       }
-      res.status(500).send(err);
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
@@ -49,10 +53,20 @@ const updateProfile = (req, res) => {
   const { name, about } = req.body;
   return User.findByIdAndUpdate(req.user._id, { name, about })
     .then((user) => {
-      res.status(200).send(user);
+      if (!user) {
+        res
+          .status(NOT_FAUND)
+          .send({ message: 'Пользователь по указанному _id не найден.' });
+        return;
+      }
+      res.status(OK).send(user);
     })
     .catch((err) => {
-      res.status(500).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      if (err.name === 'SomeErrorName') {
+        res.status(BAD_REQUEST).send({ message: `Передан некорректный id: ${err}` });
+        return;
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
@@ -60,10 +74,10 @@ const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   return User.findByIdAndUpdate(req.user._id, { avatar })
     .then((user) => {
-      res.status(200).send(user);
+      res.status(OK).send(user);
     })
     .catch((err) => {
-      res.status(500).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 

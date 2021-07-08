@@ -1,12 +1,16 @@
 const Card = require('../models/card');
 
+const {
+  BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FAUND, OK,
+} = require('../utils/constants');
+
 const getCards = (req, res) => {
   Card.find({})
     .then((cards) => {
-      res.status(200).send(cards);
+      res.status(OK).send(cards);
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
@@ -15,21 +19,28 @@ const createCard = (req, res) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => {
-      res.status(200).send(card);
+      if (!card) {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки' });
+        return;
+      }
+      res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      res.status(200).send(card);
-      console.log(req.user._id);
+      if (!card) {
+        res.status(NOT_FAUND).send({ message: 'Карточка с указанным _id не найдена.' });
+        return;
+      }
+      res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 const likeCard = (req, res) => {
@@ -39,11 +50,14 @@ const likeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      res.status(200).send(card);
-      console.log(req.user._id);
+      if (!card) {
+        res.status(NOT_FAUND).send({ message: 'Переданы некорректные данные для постановки лайка. ' });
+        return;
+      }
+      res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
@@ -54,14 +68,16 @@ const dislikeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      res.status(200).send(card);
-      console.log(req.user._id);
+      if (!card) {
+        res.status(NOT_FAUND).send({ message: 'Переданы некорректные данные при снятии лайка. ' });
+        return;
+      }
+      res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
-
 module.exports = {
   getCards, deleteCard, createCard, likeCard, dislikeCard,
 };
