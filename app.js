@@ -1,8 +1,9 @@
 const express = require('express');
 const mongoose = require('mongoose');
-
+const helmet = require('helmet');
 const usersRoutes = require('./routes/users');
 const cardsRoutes = require('./routes/cards');
+const notFaundRoutes = require('./routes/notFaund');
 
 const app = express();
 const { PORT = 3000 } = process.env;
@@ -20,9 +21,10 @@ app.use((req, res, next) => {
   next();
 });
 app.use('/', express.json());
+app.use(helmet());
 app.use('/', usersRoutes);
 app.use('/', cardsRoutes);
-
+app.use('*', notFaundRoutes);
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
