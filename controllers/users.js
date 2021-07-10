@@ -10,22 +10,24 @@ const getUsers = (req, res) => {
       res.status(OK).send(users);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send(err);
+      if (err.name === 'CastError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+        return;
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера' });
     });
 };
 const getUserById = (req, res) => {
-  User.findById(req.user._id)
+  User.findById(req.params.userId)
     .then((user) => {
-      if (!user) {
-        res
-          .status(NOT_FAUND)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
-      }
       res.status(OK).send(user);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      if (err.name === 'CastError') {
+        res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
+        return;
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера' });
     });
 };
 
@@ -37,47 +39,49 @@ const createUser = (req, res) => {
       res.status(OK).send(user);
     })
     .catch((err) => {
-      if (res.status(BAD_REQUEST)) {
+      if (err.name === 'CastError') {
         res
           .status(BAD_REQUEST)
-          .send({
-            message: `Переданы некорректные данные при создании пользователя: ${err}`,
-          });
+          .send({ message: 'Переданы некорректные данные при создании пользователя.' });
         return;
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
-  return User.findByIdAndUpdate(req.user._id, { name, about })
+  // eslint-disable-next-line max-len
+  return User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+    .orFail(new Error('NotFaund'))
     .then((user) => {
-      if (!user) {
-        res
-          .status(NOT_FAUND)
-          .send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
-      }
       res.status(OK).send(user);
     })
     .catch((err) => {
-      if (err.name === 'SomeErrorName') {
-        res.status(BAD_REQUEST).send({ message: `Передан некорректный id: ${err}` });
-        return;
+      if (err.name === 'CastError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
+      } else if (err.name === 'NotFaund') {
+        res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
     });
 };
 
 const updateAvatar = (req, res) => {
   const { avatar } = req.body;
-  return User.findByIdAndUpdate(req.user._id, { avatar })
+  return User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
       res.status(OK).send(user);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      if (err.name === 'CastError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании.' });
+      } else if (err.name === 'NotFaund') {
+        res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      }
     });
 };
 

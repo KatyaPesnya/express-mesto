@@ -10,7 +10,11 @@ const getCards = (req, res) => {
       res.status(OK).send(cards);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      if (err.name === 'CastError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+        return;
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера' });
     });
 };
 
@@ -20,27 +24,26 @@ const createCard = (req, res) => {
   Card.create({ name, link, owner })
     .then((card) => {
       if (!card) {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки.' });
         return;
       }
       res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера, ${err}` });
     });
 };
 
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
-      if (!card) {
-        res.status(NOT_FAUND).send({ message: 'Карточка с указанным _id не найдена.' });
-        return;
-      }
       res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      if (err.name === 'CastError') {
+        res.status(NOT_FAUND).send({ message: 'Карточка с указанным _id не найдена.' });
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 const likeCard = (req, res) => {
@@ -50,17 +53,15 @@ const likeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) {
-        res.status(NOT_FAUND).send({ message: 'Переданы некорректные данные для постановки лайка. ' });
-        return;
-      }
       res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      if (err.name === 'CastError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при постановке лайка.' });
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
-
 const dislikeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
@@ -68,14 +69,13 @@ const dislikeCard = (req, res) => {
     { new: true },
   )
     .then((card) => {
-      if (!card) {
-        res.status(NOT_FAUND).send({ message: 'Переданы некорректные данные при снятии лайка. ' });
-        return;
-      }
       res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+      if (err.name === 'CastError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при снятии лайка. ' });
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 module.exports = {
