@@ -11,23 +11,24 @@ const getUsers = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные.' });
         return;
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера' });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
+    .orFail(new Error('NotFaund'))
     .then((user) => {
       res.status(OK).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotFaund') {
         res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
         return;
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера' });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 
@@ -57,10 +58,10 @@ const updateProfile = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля.' });
-      } else if (err.name === 'NotFaund') {
+      } else if (err.message === 'NotFaund') {
         res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
       } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
       }
     });
 };
@@ -74,10 +75,10 @@ const updateAvatar = (req, res) => {
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании.' });
-      } else if (err.name === 'NotFaund') {
+      } else if (err.message === 'NotFaund') {
         res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
       } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера: ${err}` });
+        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
       }
     });
 };

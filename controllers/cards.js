@@ -11,10 +11,10 @@ const getCards = (req, res) => {
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные.' });
         return;
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера' });
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 
@@ -35,11 +35,12 @@ const createCard = (req, res) => {
 };
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
+    .orFail(new Error('NotFaund'))
     .then((card) => {
       res.status(OK).send(card);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.message === 'NotFaund') {
         res.status(NOT_FAUND).send({ message: 'Карточка с указанным _id не найдена.' });
       }
       res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
@@ -51,14 +52,18 @@ const likeCard = (req, res) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
+    .orFail(new Error('NotFaund'))
     .then((card) => {
       res.status(OK).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при постановке лайка.' });
+      } else if (err.message === 'NotFaund') {
+        res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 const dislikeCard = (req, res) => {
@@ -67,14 +72,18 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
+    .orFail(new Error('NotFaund'))
     .then((card) => {
       res.status(OK).send(card);
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при снятии лайка. ' });
+      } else if (err.message === 'NotFaund') {
+        res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
+      } else {
+        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
 module.exports = {
