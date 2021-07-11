@@ -10,7 +10,7 @@ const getCards = (req, res) => {
       res.status(OK).send(cards);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
         return;
       }
@@ -23,17 +23,16 @@ const createCard = (req, res) => {
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => {
-      if (!card) {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки.' });
-        return;
-      }
       res.status(OK).send(card);
     })
     .catch((err) => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: `Внутренняя ошибка сервера, ${err}` });
+      if (err.name === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании карточки.' });
+        return;
+      }
+      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
-
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {

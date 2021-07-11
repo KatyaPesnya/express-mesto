@@ -10,7 +10,7 @@ const getUsers = (req, res) => {
       res.status(OK).send(users);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
         return;
       }
@@ -39,16 +39,13 @@ const createUser = (req, res) => {
       res.status(OK).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        res
-          .status(BAD_REQUEST)
-          .send({ message: 'Переданы некорректные данные при создании пользователя.' });
+      if (err.name === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при создании пользователя.' });
         return;
       }
       res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
-
 const updateProfile = (req, res) => {
   const { name, about } = req.body;
   // eslint-disable-next-line max-len
