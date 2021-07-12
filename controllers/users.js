@@ -24,14 +24,15 @@ const getUserById = (req, res) => {
       res.status(OK).send(user);
     })
     .catch((err) => {
-      if (err.message === 'NotFaund') {
+      if (err.name === 'CastError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные.' });
+      } else if (err.message === 'NotFaund') {
         res.status(NOT_FAUND).send({ message: 'Пользователь по указанному _id не найден.' });
-        return;
+      } else {
+        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
       }
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
-
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
 
