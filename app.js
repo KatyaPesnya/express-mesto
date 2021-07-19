@@ -25,6 +25,8 @@ app.use(helmet());
 app.use('/', usersRoutes);
 app.use('/', cardsRoutes);
 app.use('*', notFaundRoutes);
+// app.post('/signin', login);
+// app.post('/signup', createUser);
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`App listening on port ${PORT}`);
