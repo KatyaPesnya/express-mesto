@@ -34,10 +34,19 @@ const createCard = (req, res) => {
     });
 };
 const deleteCard = (req, res) => {
-  Card.findByIdAndRemove(req.params.cardId)
+  Card.findById(req.params.cardId)
     .orFail(new Error('NotFaund'))
     .then((card) => {
-      res.status(OK).send(card);
+      console.log(req.user._id);
+      console.log(card.owner);
+      if (card.owner.toString() !== req.user._id) {
+        res.status(401).send({ message: 'Нет прав для удаления карточки' });
+      } else {
+        Card.findByIdAndDelete(req.params.cardId)
+          .then(() => {
+            res.status(200).send(card);
+          });
+      }
     })
     .catch((err) => {
       if (err.message === 'NotFaund') {
@@ -46,6 +55,7 @@ const deleteCard = (req, res) => {
       res.status(INTERNAL_SERVER_ERROR).send({ message: 'Внутренняя ошибка сервера.' });
     });
 };
+
 const likeCard = (req, res) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
