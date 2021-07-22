@@ -20,8 +20,6 @@ const createCard = (req, res, next) => {
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
     .then((card) => {
-      console.log(req.user._id);
-      console.log(card.owner);
       if (card.owner.toString() !== req.user._id) {
         res.status(403).send({ message: 'Нет прав для удаления карточки' });
       } else {
