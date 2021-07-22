@@ -1,8 +1,0 @@
-const BAD_REQUEST = 400;
-const INTERNAL_SERVER_ERROR = 500;
-const NOT_FAUND = 404;
-const OK = 200;
-
-module.exports = {
-  BAD_REQUEST, INTERNAL_SERVER_ERROR, NOT_FAUND, OK,
-};
