@@ -17,27 +17,20 @@ const getUsers = (req, res, next) => {
 };
 const getProfile = (req, res, next) => {
   User.findById(req.user._id)
+    .orFail(next(new NotFoundError('Пользователь с указанным id не найден')))
     .then((user) => {
       res.status(200).send(user);
-      console.dir(user);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadReqError('Пользователя нет в базе'));
-      }
-    });
+    .catch(next);
 };
 
 const getUserById = (req, res, next) => {
   User.findById(req.params.userId)
+    .orFail(next(new NotFoundError('Пользователь с указанным id не найден')))
     .then((user) => {
       res.status(200).send(user);
     })
     .catch((err) => {
-      if (err.name === 'CastError') {
-        next(new NotFoundError('Пользователь с указанным id не найден'));
-        return;
-      }
       if (err.name === 'ValidationError') {
         next(new BadReqError('Переданы некорректные данные при обновлении профиля'));
         return;
@@ -87,6 +80,7 @@ const updateProfile = (req, res, next) => {
     { name, about },
     { new: true, runValidators: true },
   )
+    .orFail(next(new NotFoundError('Пользователь с указанным id не найден')))
     .then((user) => {
       res.status(200).send(user);
     })
@@ -102,6 +96,7 @@ const updateAvatar = (req, res, next) => {
     { avatar },
     { new: true, runValidators: true },
   )
+    .orFail(next(new NotFoundError('Пользователь с указанным id не найден')))
     .then((user) => {
       res.status(200).send(user);
     })

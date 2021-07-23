@@ -1,4 +1,6 @@
 const Card = require('../models/card');
+const NotFoundError = require('../errors/not-found-err');
+const BadReqError = require('../errors/bad-req-err');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -19,6 +21,7 @@ const createCard = (req, res, next) => {
 };
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
+    .orFail(next(new NotFoundError('Карточка с указанным id не найдена')))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         res.status(403).send({ message: 'Нет прав для удаления карточки' });
