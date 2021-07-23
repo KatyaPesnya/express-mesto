@@ -28,20 +28,23 @@ const getProfile = (req, res, next) => {
     });
 };
 
-const getUserById = (req, res, next) => User.findById(req.params.userId)
-  .then((user) => {
-    res.status(200).send(user);
-  })
-  .catch((err) => {
-    if (err.name === 'CastError') {
-      next(new NotFoundError('Пользователь с указанным id не найден'));
-      return;
-    } if (err.name === 'ValidationError') {
-      next(new BadReqError('Переданы некорректные данные при обновлении профиля'));
-      return;
-    }
-    next();
-  });
+const getUserById = (req, res, next) => {
+  User.findById(req.params.userId)
+    .then((user) => {
+      res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === 'CastError') {
+        next(new NotFoundError('Пользователь с указанным id не найден'));
+        return;
+      }
+      if (err.name === 'ValidationError') {
+        next(new BadReqError('Переданы некорректные данные при обновлении профиля'));
+        return;
+      }
+      next();
+    });
+};
 const createUser = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
