@@ -43,7 +43,7 @@ app.post('/signup', celebrate({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8)
       .pattern(new RegExp('^[A-Za-z0-9]{8,30}$')),
-    name: Joi.string().required().min(2).max(30),
+    name: Joi.string().min(2).max(30),
     about: Joi.string().min(2).max(30),
     avatar: Joi.string()
       .regex(/^(https?:\/\/)?([\da-z\\.-]+)\.([a-z\\.]{2,6})([\\/\w \\.-]*)*\/?$/),
@@ -58,20 +58,23 @@ app.use('/', cardsRoutes);
 app.all('*', () => {
   throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
-app.use(errors());
+
+// app.use(errors());
+
 app.use((err, req, res, next) => {
-  let { statusCode = 500, message = 'Неизвестная ошибка сервера' } = err;
-  if (err.kind === 'ObjectId') {
-    statusCode = 400;
-    message = 'Некорректное значение идентификатора';
-  } else if (err.name === 'ValidationError') {
-    statusCode = 404;
-    message = 'Переданы некорректные данные';
-  }
+  console.log(err, err.message, err.name);
+  const statusCode = err.statusCode || 500;
+  const message = statusCode === 500 ? 'На сервере произошла ошибка' : err.message;
   res.status(statusCode).send({ message });
   next();
 });
-
+// app.use((err, req, res, next) => {
+//   const { statusCode = 500, message } = err;
+//   res
+//     .status(statusCode)
+//     .send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
+//   next();
+// });
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });

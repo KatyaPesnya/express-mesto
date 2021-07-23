@@ -3,6 +3,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const BadReqError = require('../errors/bad-req-err');
+const ConflictError = require('../errors/conflict-err');
+const NotAuthError = require('../errors/not-auth-err');
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -14,22 +16,32 @@ const getUsers = (req, res, next) => {
     .catch(next);
 };
 const getProfile = (req, res, next) => {
-  User.findById(req.params.userId)
+  User.findById(req.user._id)
     .then((user) => {
       res.status(200).send(user);
+      console.dir(user);
     })
-    .catch(next);
+    .catch((err) => {
+      if (err.name === 'ValidationError') {
+        next(new BadReqError('Пользователя нет в базе'));
+      }
+    });
 };
 
 const getUserById = (req, res, next) => User.findById(req.params.userId)
   .then((user) => {
-    if (!user) {
-      throw new NotFoundError('Пользователь по указанному _id не найден.');
-    }
     res.status(200).send(user);
   })
-  .catch(next);
-
+  .catch((err) => {
+    if (err.name === 'CastError') {
+      next(new NotFoundError('Пользователь с указанным id не найден'));
+      return;
+    } if (err.name === 'ValidationError') {
+      next(new BadReqError('Переданы некорректные данные при обновлении профиля'));
+      return;
+    }
+    next();
+  });
 const createUser = (req, res, next) => {
   const { email, password } = req.body;
   if (!email || !password) {
@@ -38,7 +50,7 @@ const createUser = (req, res, next) => {
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        res.status(409).send({ message: 'Такой пользователь уже зарегистрирован.' });
+        throw new ConflictError('Такой пользователь уже зарегистрирован');
       }
     });
   bcrypt
@@ -101,7 +113,9 @@ const login = (req, res, next) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch(next);
+    .catch((err) => {
+      next(new NotAuthError('Необходима авторизация'));
+    });
 };
 
 module.exports = {
