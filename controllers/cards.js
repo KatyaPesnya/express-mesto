@@ -1,6 +1,5 @@
 const Card = require('../models/card');
 const NotFoundError = require('../errors/not-found-err');
-const BadReqError = require('../errors/bad-req-err');
 
 const getCards = (req, res, next) => {
   Card.find({})
@@ -53,7 +52,6 @@ const dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .orFail(new Error('NotFaund'))
     .then((card) => {
       res.status(200).send(card);
     })

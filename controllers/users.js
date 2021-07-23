@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
-const BadReqError = require('../errors/bad-req-err');
 const ConflictError = require('../errors/conflict-err');
 const NotAuthError = require('../errors/not-auth-err');
 
@@ -30,23 +29,14 @@ const getUserById = (req, res, next) => {
     .then((user) => {
       res.status(200).send(user);
     })
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new BadReqError('Переданы некорректные данные при обновлении профиля'));
-        return;
-      }
-      next();
-    });
+    .catch(next);
 };
 const createUser = (req, res, next) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    throw new BadReqError('email или пароль отсутствует');
-  }
+  const { email } = req.body;
   User.findOne({ email })
     .then((user) => {
       if (user) {
-        throw new ConflictError('Такой пользователь уже зарегистрирован');
+        next(new ConflictError('Такой пользователь уже зарегистрирован'));
       }
     });
   bcrypt
@@ -71,32 +61,28 @@ const createUser = (req, res, next) => {
     .catch(next);
 };
 const updateProfile = (req, res, next) => {
+  const id = req.user._id;
   const { name, about } = req.body;
-  if (!name || !about) {
-    throw new BadReqError('не заполнены обязательные поля');
-  }
+
   User.findOneAndUpdate(
-    req.user._id,
+    { _id: id },
     { name, about },
-    { new: true, runValidators: true },
+    { runValidators: true, new: true },
   )
-    .orFail(next(new NotFoundError('Пользователь с указанным id не найден')))
     .then((user) => {
       res.status(200).send(user);
     })
     .catch(next);
 };
+
 const updateAvatar = (req, res, next) => {
+  const id = req.user._id;
   const { avatar } = req.body;
-  if (!avatar) {
-    throw new BadReqError('не заполнены обязательные поля');
-  }
-  return User.findByIdAndUpdate(
-    req.user._id,
+  User.findOneAndUpdate(
+    { _id: id },
     { avatar },
-    { new: true, runValidators: true },
+    { runValidators: true, new: true },
   )
-    .orFail(next(new NotFoundError('Пользователь с указанным id не найден')))
     .then((user) => {
       res.status(200).send(user);
     })
@@ -105,17 +91,15 @@ const updateAvatar = (req, res, next) => {
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
-
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' });
       res.send({ token });
     })
     .catch((err) => {
-      next(new NotAuthError('Необходима авторизация'));
+      next(new NotAuthError(`Необходима авторизация: ${err.message}`));
     });
 };
-
 module.exports = {
   getUsers,
   getUserById,

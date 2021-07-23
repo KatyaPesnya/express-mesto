@@ -18,7 +18,7 @@ const randomString = crypto
 console.log(randomString);
 require('dotenv').config();
 
-console.log(process.env.NODE_ENV);
+// console.log(process.env.NODE_ENV);
 const app = express();
 const { PORT = 3000 } = process.env;
 
@@ -59,7 +59,7 @@ app.all('*', () => {
   throw new NotFoundError('Запрашиваемый ресурс не найден');
 });
 
-// app.use(errors());
+app.use(errors());
 
 app.use((err, req, res, next) => {
   console.log(err, err.message, err.name);
@@ -68,13 +68,7 @@ app.use((err, req, res, next) => {
   res.status(statusCode).send({ message });
   next();
 });
-// app.use((err, req, res, next) => {
-//   const { statusCode = 500, message } = err;
-//   res
-//     .status(statusCode)
-//     .send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
-//   next();
-// });
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
 });
