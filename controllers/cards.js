@@ -20,7 +20,7 @@ const createCard = (req, res, next) => {
 };
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .orFail(next(new NotFoundError('Карточка с указанным id не найдена')))
+    .orFail(() => next(new NotFoundError('Карточка с указанным id не найдена')))
     .then((card) => {
       if (card.owner.toString() !== req.user._id) {
         res.status(403).send({ message: 'Нет прав для удаления карточки' });
@@ -40,6 +40,7 @@ const likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
+    .orFail(() => next(new NotFoundError('Карточка с указанным id не найдена')))
     .then((card) => {
       res.status(200).send(card);
     })
@@ -52,6 +53,7 @@ const dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
+    .orFail(() => next(new NotFoundError('Карточка с указанным id не найдена')))
     .then((card) => {
       res.status(200).send(card);
     })
