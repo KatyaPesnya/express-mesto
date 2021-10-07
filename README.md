@@ -62,5 +62,5 @@ MongoDB (сопоставитель Mongoose)
 
 # Чеклисты проектной работы:
 
-*[Чеклист 1](https://code.s3.yandex.net/web-developer/checklists/new-program/checklist-12/index.html)
-*[Чеклист 2](https://code.s3.yandex.net/web-developer/checklists/new-program/checklist-13/index.html)
+* [Чеклист 1](https://code.s3.yandex.net/web-developer/checklists/new-program/checklist-12/index.html)
+* [Чеклист 2](https://code.s3.yandex.net/web-developer/checklists/new-program/checklist-13/index.html)
